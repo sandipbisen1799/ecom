@@ -1,0 +1,9 @@
+export { default as HeroSlider } from './HeroSlider';
+export { default as CategoryStrip } from './CategoryStrip';
+export { default as ProductCard } from './ProductCard';
+export { default as FeaturedProducts } from './FeaturedProducts';
+export { default as StatsBanner } from './StatsBanner';
+export { default as Testimonials } from './Testimonials';
+export { default as AboutSection } from './AboutSection';
+export { default as MarketingHeader } from './MarketingHeader';
+export { default as MarketingFooter } from './MarketingFooter';

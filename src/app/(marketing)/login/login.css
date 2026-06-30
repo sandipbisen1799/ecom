@@ -1,16 +1,13 @@
-body {
-  font-family: 'Poppins', sans-serif;
-  background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #a1c4fd, #c2e9fb, #d4fc79, #96e6a1);
-  background-size: 600% 600%;
-  animation: gradientBG 14s ease infinite;
-}
-
 .login-container {
   min-height: calc(100vh - 100px); /* adjusted for layout topbar/header */
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 40px 20px;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #a1c4fd, #c2e9fb, #d4fc79, #96e6a1);
+  background-size: 600% 600%;
+  animation: gradientBG 14s ease infinite;
 }
 
 @keyframes gradientBG {
