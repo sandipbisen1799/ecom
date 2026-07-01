@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "my-node-server": {
+      "command": "node",
+      "args": [
+        "C:/path/to/your/mcp/server/index.js"
+      ],
+      "env": {
+        "API_KEY": "https://gitmcp.io/sandipbisen1799/ecom"
+      }
+    }
+  }
+}
