@@ -135,11 +135,16 @@ export default function ProductCard({ product, index }: ProductCardProps) {
           <span className="text-xs text-slate-500 dark:text-slate-400">({product.reviews})</span>
         </div>
         
-        <div className="mt-auto pt-2 flex items-baseline justify-between mb-4">
+        <div className="mt-auto pt-2 flex items-end justify-between mb-4">
           <div className="flex items-baseline gap-2">
             <span className="text-xl font-extrabold text-emerald-700 dark:text-emerald-400">₹{product.price.toLocaleString('en-IN')}</span>
             <span className="text-sm text-slate-400 line-through">₹{product.oldPrice.toLocaleString('en-IN')}</span>
           </div>
+          {typeof product.bv === 'number' && (
+            <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-900/30 dark:text-emerald-400 px-2 py-1 rounded-md whitespace-nowrap">
+              {product.bv} BV
+            </span>
+          )}
         </div>
         
         <Button

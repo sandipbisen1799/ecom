@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import SectionHead from '@/components/ui/SectionHead';
 import { Button } from '@/components/ui/Button';
 import { fadeUp, staggerContainer } from '@/lib/motion';
@@ -13,6 +14,7 @@ const features = [
 ];
 
 export default function AboutSection() {
+  const router = useRouter();
   return (
     <div id="about" className="bg-gradient-to-b from-white to-slate-50 dark:from-slate-950 dark:to-slate-900 border-t border-slate-100 dark:border-slate-800">
       <section className="max-w-7xl mx-auto px-6 py-24">
@@ -53,7 +55,8 @@ export default function AboutSection() {
           viewport={{ once: true }}
           transition={{ delay: 0.3 }}
         >
-          <Button 
+          <Button
+            onClick={() => router.push('/login')}
             className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-8 py-6 shadow-lg shadow-emerald-600/20 text-base font-semibold"
           >
             <i className="fa-solid fa-rocket mr-2" />

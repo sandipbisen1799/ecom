@@ -1,22 +1,45 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import UserSidebar from './UserSidebar';
 import UserTopbar from './UserTopbar';
 import PageTransition from '@/components/admin/PageTransition';
-import { userPageTitles } from './menu';
+import { userPageTitles, userMenuSections, type UserMenuItem } from './menu';
+import CommandPalette, { type CommandPaletteItem } from '@/components/ui/CommandPalette';
 
 interface UserShellProps {
   children: React.ReactNode;
 }
 
+function flattenUserMenu(sections: typeof userMenuSections): CommandPaletteItem[] {
+  const out: CommandPaletteItem[] = [];
+  const walk = (item: UserMenuItem, group?: string) => {
+    if (item.href && item.href !== '#') out.push({ label: item.label, href: item.href, icon: item.icon, group });
+    item.subItems?.forEach((sub) => walk(sub, item.label));
+  };
+  sections.forEach((section) => section.items.forEach((item) => walk(item)));
+  return out;
+}
+
 export default function UserShell({ children }: UserShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [commandOpen, setCommandOpen] = useState(false);
   const pathname = usePathname();
   const pageInfo = userPageTitles[pathname] || { title: 'Dashboard', sub: 'Overview' };
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setCommandOpen(true);
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
 
   // Load from localStorage on mount
   require('react').useEffect(() => {
@@ -38,15 +61,17 @@ export default function UserShell({ children }: UserShellProps) {
 
   return (
     <>
-      <motion.button
-        className="mob-toggle user-mob-toggle"
-        onClick={toggleSidebar}
-        whileHover={{ scale: 1.08 }}
-        whileTap={{ scale: 0.95 }}
-        aria-label="Open menu"
-      >
-        <i className="fa-solid fa-bars" />
-      </motion.button>
+      {!sidebarOpen && (
+        <motion.button
+          className="mob-toggle user-mob-toggle"
+          onClick={toggleSidebar}
+          whileHover={{ scale: 1.08 }}
+          whileTap={{ scale: 0.95 }}
+          aria-label="Open menu"
+        >
+          <i className="fa-solid fa-bars" />
+        </motion.button>
+      )}
 
       <AnimatePresence>
         {sidebarOpen && (
@@ -60,11 +85,18 @@ export default function UserShell({ children }: UserShellProps) {
         )}
       </AnimatePresence>
 
-      <UserSidebar 
-        open={sidebarOpen} 
-        onClose={closeSidebar} 
+      <UserSidebar
+        open={sidebarOpen}
+        onClose={closeSidebar}
         collapsed={sidebarCollapsed}
         onToggleCollapse={handleToggleCollapse}
+        onOpenCommand={() => setCommandOpen(true)}
+      />
+
+      <CommandPalette
+        open={commandOpen}
+        onClose={() => setCommandOpen(false)}
+        items={flattenUserMenu(userMenuSections)}
       />
 
       <div className={`main user-main ${sidebarCollapsed ? 'collapsed' : ''}`}>

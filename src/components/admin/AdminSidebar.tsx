@@ -1,16 +1,49 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { adminMenuItems, type MainMenuItem } from './menu';
+import { adminMenuItems, type MainMenuItem, type SubMenuItem } from './menu';
+
+function filterMenuItems(items: MainMenuItem[], query: string): MainMenuItem[] {
+  if (!query) return items;
+  const q = query.toLowerCase();
+  const matches = (label: string) => label.toLowerCase().includes(q);
+
+  return items.reduce<MainMenuItem[]>((acc, item) => {
+    const selfMatch = matches(item.label);
+    if (!item.subItems) {
+      if (selfMatch) acc.push(item);
+      return acc;
+    }
+
+    const filteredSubs = item.subItems.reduce<SubMenuItem[]>((subAcc, sub) => {
+      const subMatch = matches(sub.label);
+      if (sub.subItems) {
+        const filteredLeaves = sub.subItems.filter((leaf) => matches(leaf.label));
+        if (subMatch || filteredLeaves.length > 0) {
+          subAcc.push({ ...sub, subItems: subMatch ? sub.subItems : filteredLeaves });
+        }
+      } else if (subMatch) {
+        subAcc.push(sub);
+      }
+      return subAcc;
+    }, []);
+
+    if (selfMatch || filteredSubs.length > 0) {
+      acc.push({ ...item, subItems: selfMatch ? item.subItems : filteredSubs });
+    }
+    return acc;
+  }, []);
+}
 
 interface AdminSidebarProps {
   open: boolean;
   onClose: () => void;
   collapsed: boolean;
   onToggleCollapse: () => void;
+  onOpenCommand?: () => void;
 }
 
 function isItemActive(item: MainMenuItem, pathname: string): boolean {
@@ -24,10 +57,22 @@ function isItemActive(item: MainMenuItem, pathname: string): boolean {
   });
 }
 
-export default function AdminSidebar({ open, onClose, collapsed, onToggleCollapse }: AdminSidebarProps) {
+export default function AdminSidebar({ open, onClose, collapsed, onToggleCollapse, onOpenCommand }: AdminSidebarProps) {
   const pathname = usePathname();
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
   const [expandedSubMenus, setExpandedSubMenus] = useState<Record<string, boolean>>({});
+  const [menuSearch, setMenuSearch] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 700);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const visibleMenuItems = useMemo(() => filterMenuItems(adminMenuItems, menuSearch), [menuSearch]);
+  const isSearching = menuSearch.trim().length > 0;
 
   useEffect(() => {
     const initialParent: Record<string, boolean> = {};
@@ -65,11 +110,7 @@ export default function AdminSidebar({ open, onClose, collapsed, onToggleCollaps
   };
 
   return (
-    <motion.aside
-      className={`sidebar ${open ? 'open' : ''} ${collapsed ? 'collapsed' : ''}`}
-      initial={false}
-      animate={{ x: 0 }}
-    >
+    <aside className={`sidebar ${open ? 'open' : ''} ${collapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-glow" />
 
       <div className="sidebar-logo">
@@ -92,23 +133,45 @@ export default function AdminSidebar({ open, onClose, collapsed, onToggleCollaps
           className="sidebar-collapse-btn"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          aria-label="Collapse sidebar"
-          onClick={onToggleCollapse}
+          aria-label={isMobile ? 'Close menu' : 'Collapse sidebar'}
+          onClick={isMobile ? onClose : onToggleCollapse}
         >
-          <i className={`fa-solid ${collapsed ? 'fa-angles-right' : 'fa-angles-left'}`} />
+          <i className={`fa-solid ${isMobile ? 'fa-xmark' : collapsed ? 'fa-angles-right' : 'fa-angles-left'}`} />
         </motion.button>
       </div>
 
       <div className="sidebar-search">
         <i className="fa-solid fa-magnifying-glass" />
-        <input type="text" placeholder="Search menu..." />
+        <input
+          type="text"
+          placeholder="Search menu..."
+          value={menuSearch}
+          onChange={(e) => setMenuSearch(e.target.value)}
+        />
+        <button
+          type="button"
+          onClick={onOpenCommand}
+          title="Open command palette"
+          style={{
+            border: 'none', background: '#fff', color: 'var(--sidebar-muted)',
+            fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 5,
+            cursor: 'pointer', flexShrink: 0,
+          }}
+        >
+          ⌘K
+        </button>
       </div>
 
       <nav className="sidebar-nav">
         <span className="nav-section-label">Main Menu</span>
-        {adminMenuItems.map((item, i) => {
+        {visibleMenuItems.length === 0 && (
+          <div style={{ padding: '16px 12px', color: '#9CA3AF', fontSize: 12 }}>
+            No menu items match &ldquo;{menuSearch}&rdquo;
+          </div>
+        )}
+        {visibleMenuItems.map((item, i) => {
           const hasSub = item.hasSub && item.subItems && item.subItems.length > 0;
-          const isMenuOpen = expandedMenus[item.label];
+          const isMenuOpen = isSearching ? true : expandedMenus[item.label];
           const isLinkActive = !hasSub && pathname === item.href;
           const hasActiveSub = isItemActive(item, pathname);
 
@@ -151,7 +214,7 @@ export default function AdminSidebar({ open, onClose, collapsed, onToggleCollaps
                       >
                         {item.subItems?.map((sub) => {
                           if (sub.hasSub && sub.subItems) {
-                            const isSubOpen = expandedSubMenus[sub.label];
+                            const isSubOpen = isSearching ? true : expandedSubMenus[sub.label];
                             const hasActiveLeaf = sub.subItems.some((leaf) => leaf.href === pathname);
 
                             return (
@@ -264,6 +327,6 @@ export default function AdminSidebar({ open, onClose, collapsed, onToggleCollaps
           <span className="nav-label">Logout</span>
         </Link>
       </div>
-    </motion.aside>
+    </aside>
   );
 }

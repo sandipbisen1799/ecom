@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import AnimatedCounter from '@/components/ui/AnimatedCounter';
 import { fadeUp } from '@/lib/motion';
 
-type StatVariant = 'green' | 'orange' | 'blue' | 'purple';
+type StatVariant = 'green' | 'orange' | 'blue' | 'purple' | 'red';
 
 interface AdminStatCardProps {
   icon: string;
@@ -12,8 +12,8 @@ interface AdminStatCardProps {
   prefix?: string;
   suffix?: string;
   label: string;
-  change: string;
-  trend: 'up' | 'down';
+  change?: string;
+  trend?: 'up' | 'down';
   variant: StatVariant;
   index?: number;
   isNumeric?: boolean;
@@ -61,9 +61,11 @@ export default function AdminStatCard({
         )}
       </div>
       <div className="stat-label">{label}</div>
-      <div className={`stat-change ${trend}`}>
-        <i className={`fa-solid fa-arrow-trend-${trend}`} /> {change}
-      </div>
+      {change && trend && (
+        <div className={`stat-change ${trend}`}>
+          <i className={`fa-solid fa-arrow-trend-${trend}`} /> {change}
+        </div>
+      )}
       <div className="stat-card-shine" />
     </motion.div>
   );

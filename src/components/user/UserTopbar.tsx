@@ -98,7 +98,7 @@ export default function UserTopbar({ pageSub, onMenuToggle }: UserTopbarProps) {
                 <div className="max-h-72 overflow-y-auto">
                   {notifications.map((n) => (
                     <div key={n.id} className={`p-3.5 border-b border-gray-50 hover:bg-slate-50 cursor-pointer flex gap-3 items-start transition ${n.unread ? 'bg-amber-50/20' : ''}`}>
-                      <div className="w-2.5 h-2.5 rounded-full mt-1.5 flex-shrink-0" style={{ background: n.unread ? '#3b82f6' : '#cbd5e1' }} />
+                      <div className="w-2.5 h-2.5 rounded-full mt-1.5 flex-shrink-0" style={{ background: n.unread ? '#1D6435' : '#cbd5e1' }} />
                       <div className="flex-1 min-w-0">
                         <h4 className="font-bold text-xs text-slate-900 leading-snug">{n.title}</h4>
                         <p className="text-[11px] text-slate-500 mt-1 leading-snug">{n.desc}</p>

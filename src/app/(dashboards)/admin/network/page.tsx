@@ -58,7 +58,7 @@ export default function NetworkTreePage() {
           {/* LEVEL 0 */}
           <div className="tree-level">
             <div className="tree-node">
-              <div className="tree-avatar" style={{ background: 'linear-gradient(135deg, var(--accent), #2d8a4e)' }}>A</div>
+              <div className="tree-avatar" style={{ background: 'linear-gradient(135deg, var(--accent), #1e40af)' }}>A</div>
               <div className="tree-name">Admin (Root)</div>
               <div className="tree-id">AHK001</div>
               <div className="tree-bv">BV: 12,500</div>

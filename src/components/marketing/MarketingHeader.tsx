@@ -2,9 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function MarketingHeader() {
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState('');
   const [activeNav, setActiveNav] = useState('Home');
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
@@ -166,15 +169,28 @@ export default function MarketingHeader() {
             </div>
           </Link>
           
-          <div className="search-bar">
-            <input type="text" placeholder="Search for products, categories..." />
-            <motion.button 
-              whileHover={{ scale: 1.02 }} 
+          <form
+            className="search-bar"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const q = searchQuery.trim();
+              router.push(q ? `/user/shop?search=${encodeURIComponent(q)}` : '/user/shop');
+            }}
+          >
+            <input
+              type="text"
+              placeholder="Search for products, categories..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <motion.button
+              type="submit"
+              whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.95 }}
             >
               <i className="fa-solid fa-magnifying-glass" />
             </motion.button>
-          </div>
+          </form>
           
           <div className="header-actions">
             <motion.div whileHover={{ y: -3, scale: 1.05 }} whileTap={{ scale: 0.9 }}>

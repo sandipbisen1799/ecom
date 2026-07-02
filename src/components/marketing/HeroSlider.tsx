@@ -1,14 +1,24 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 import { heroSlides } from './data';
 import { slideInLeft, slideInRight } from '@/lib/motion';
 
 export default function HeroSlider() {
+  const router = useRouter();
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
+
+  const goToHref = useCallback((href: string) => {
+    if (href.startsWith('#')) {
+      document.querySelector(href)?.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      router.push(href);
+    }
+  }, [router]);
 
   const goTo = useCallback((index: number, dir: number) => {
     setDirection(dir);
@@ -72,10 +82,19 @@ export default function HeroSlider() {
                 {slide.description}
               </p>
               <div className="flex gap-4 justify-center lg:justify-start flex-wrap">
-                <Button size="lg" className="bg-white text-emerald-900 hover:bg-emerald-50 rounded-full font-bold px-8 shadow-xl shadow-emerald-900/20">
+                <Button
+                  size="lg"
+                  onClick={() => goToHref(slide.primaryCta.href)}
+                  className="bg-white text-emerald-900 hover:bg-emerald-50 rounded-full font-bold px-8 shadow-xl shadow-emerald-900/20"
+                >
                   {slide.primaryCta.label}
                 </Button>
-                <Button size="lg" variant="outline" className="rounded-full text-white border-white/40 hover:bg-white/10 font-semibold px-8 bg-transparent">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={() => goToHref(slide.secondaryCta.href)}
+                  className="rounded-full text-white border-white/40 hover:bg-white/10 font-semibold px-8 bg-transparent"
+                >
                   {slide.secondaryCta.label}
                 </Button>
               </div>

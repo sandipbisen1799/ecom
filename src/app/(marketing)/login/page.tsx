@@ -159,7 +159,7 @@ export default function LoginPage() {
           <div className="right-illustration">
             <i className="fa-solid fa-leaf"></i>
           </div>
-          <h2 className="right-title">Welcome to<br/>Swa Ecommerce</h2>
+          <h2 className="right-title">Welcome to<br/>Aurra Health Kart</h2>
           <p className="right-subtitle">Journey start's today!<br/>Your health &amp; wellness business awaits.</p>
           <div className="feature-pills">
             <span className="pill"><i className="fa-solid fa-shield-halved"></i> Secure</span>

@@ -2,18 +2,40 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import AdminCard from '@/components/admin/AdminCard';
 import AdminStatCard from '@/components/admin/AdminStatCard';
 import { staggerContainer, fadeUp } from '@/lib/motion';
 
-const incomeBreakdown = [
-  { label: 'Direct Income', amount: 'â‚¹5,200', width: '85%', gradient: 'linear-gradient(90deg,#3b82f6,#60a5fa)' },
-  { label: 'Level Income', amount: 'â‚¹3,840', width: '62%', gradient: 'linear-gradient(90deg,#22c55e,#86efac)' },
-  { label: 'Team Bonus', amount: 'â‚¹2,100', width: '45%', gradient: 'linear-gradient(90deg,#f59e0b,#fcd34d)' },
-  { label: 'Performance Bonus', amount: 'â‚¹1,480', width: '30%', gradient: 'linear-gradient(90deg,#8b5cf6,#c4b5fd)' },
-  { label: 'Leadership Pool', amount: 'â‚¹800', width: '18%', gradient: 'linear-gradient(90deg,#ef4444,#fca5a5)' },
-];
+const incomeBreakdownByPeriod: Record<string, { label: string; amount: string; width: string; gradient: string }[]> = {
+  'This Month': [
+    { label: 'Direct Income', amount: '₹5,200', width: '85%', gradient: 'linear-gradient(90deg,#3b82f6,#60a5fa)' },
+    { label: 'Level Income', amount: '₹3,840', width: '62%', gradient: 'linear-gradient(90deg,#22c55e,#86efac)' },
+    { label: 'Team Bonus', amount: '₹2,100', width: '45%', gradient: 'linear-gradient(90deg,#f59e0b,#fcd34d)' },
+    { label: 'Performance Bonus', amount: '₹1,480', width: '30%', gradient: 'linear-gradient(90deg,#8b5cf6,#c4b5fd)' },
+    { label: 'Leadership Pool', amount: '₹800', width: '18%', gradient: 'linear-gradient(90deg,#ef4444,#fca5a5)' },
+  ],
+  'Last Month': [
+    { label: 'Direct Income', amount: '₹4,650', width: '78%', gradient: 'linear-gradient(90deg,#3b82f6,#60a5fa)' },
+    { label: 'Level Income', amount: '₹3,120', width: '52%', gradient: 'linear-gradient(90deg,#22c55e,#86efac)' },
+    { label: 'Team Bonus', amount: '₹1,890', width: '38%', gradient: 'linear-gradient(90deg,#f59e0b,#fcd34d)' },
+    { label: 'Performance Bonus', amount: '₹1,150', width: '24%', gradient: 'linear-gradient(90deg,#8b5cf6,#c4b5fd)' },
+    { label: 'Leadership Pool', amount: '₹640', width: '14%', gradient: 'linear-gradient(90deg,#ef4444,#fca5a5)' },
+  ],
+  'This Year': [
+    { label: 'Direct Income', amount: '₹52,800', width: '100%', gradient: 'linear-gradient(90deg,#3b82f6,#60a5fa)' },
+    { label: 'Level Income', amount: '₹38,240', width: '72%', gradient: 'linear-gradient(90deg,#22c55e,#86efac)' },
+    { label: 'Team Bonus', amount: '₹21,600', width: '41%', gradient: 'linear-gradient(90deg,#f59e0b,#fcd34d)' },
+    { label: 'Performance Bonus', amount: '₹14,900', width: '28%', gradient: 'linear-gradient(90deg,#8b5cf6,#c4b5fd)' },
+    { label: 'Leadership Pool', amount: '₹8,750', width: '17%', gradient: 'linear-gradient(90deg,#ef4444,#fca5a5)' },
+  ],
+};
+
+const incomeTotalByPeriod: Record<string, string> = {
+  'This Month': '₹13,420',
+  'Last Month': '₹11,450',
+  'This Year': '₹136,290',
+};
 
 const quickActions = [
   { icon: 'fa-store', label: 'Shop Products', href: '/user/shop' },
@@ -40,17 +62,17 @@ const networkTree = {
 };
 
 const recentOrders = [
-  { id: '#8821', product: 'Immunity Booster', amount: 'â‚¹599', status: 'Delivered', statusClass: 'p-green' },
-  { id: '#8789', product: 'Glow Serum', amount: 'â‚¹849', status: 'Shipped', statusClass: 'p-blue' },
-  { id: '#8755', product: 'Ashwagandha', amount: 'â‚¹379', status: 'Delivered', statusClass: 'p-green' },
-  { id: '#8721', product: 'Wild Honey x2', amount: 'â‚¹1,398', status: 'Delivered', statusClass: 'p-green' },
-  { id: '#8698', product: 'Protein Shake', amount: 'â‚¹1,249', status: 'Processing', statusClass: 'p-yellow' },
+  { id: '#8821', product: 'Immunity Booster', amount: '₹599', status: 'Delivered', statusClass: 'p-green' },
+  { id: '#8789', product: 'Glow Serum', amount: '₹849', status: 'Shipped', statusClass: 'p-blue' },
+  { id: '#8755', product: 'Ashwagandha', amount: '₹379', status: 'Delivered', statusClass: 'p-green' },
+  { id: '#8721', product: 'Wild Honey x2', amount: '₹1,398', status: 'Delivered', statusClass: 'p-green' },
+  { id: '#8698', product: 'Protein Shake', amount: '₹1,249', status: 'Processing', statusClass: 'p-yellow' },
 ];
 
 const withdrawalHistory = [
-  { date: '25 Jun', amount: 'â‚¹3,200', method: 'UPI', status: 'Paid', statusClass: 'p-green' },
-  { date: '10 Jun', amount: 'â‚¹2,800', method: 'Bank', status: 'Paid', statusClass: 'p-green' },
-  { date: '28 May', amount: 'â‚¹1,500', method: 'UPI', status: 'Paid', statusClass: 'p-green' },
+  { date: '25 Jun', amount: '₹3,200', method: 'UPI', status: 'Paid', statusClass: 'p-green' },
+  { date: '10 Jun', amount: '₹2,800', method: 'Bank', status: 'Paid', statusClass: 'p-green' },
+  { date: '28 May', amount: '₹1,500', method: 'UPI', status: 'Paid', statusClass: 'p-green' },
 ];
 
 export default function UserDashboard() {
@@ -61,6 +83,10 @@ export default function UserDashboard() {
   const [newMemberMobile, setNewMemberMobile] = useState('');
   
   const [treeData, setTreeData] = useState(networkTree);
+
+  const [incomePeriod, setIncomePeriod] = useState('This Month');
+  const [showIncomeDropdown, setShowIncomeDropdown] = useState(false);
+  const incomeBreakdown = incomeBreakdownByPeriod[incomePeriod];
   
   const [chatOpen, setChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState<any[]>([
@@ -121,20 +147,20 @@ export default function UserDashboard() {
       const w = e.dataset.w;
       if (w) {
         e.style.width = '0%';
-        setTimeout(() => (e.style.width = w), 400);
+        setTimeout(() => (e.style.width = w), 50);
       }
     });
-  }, []);
+  }, [incomePeriod]);
 
   const copyRef = () => {
     navigator.clipboard?.writeText('https://aurrahealthkart.in/ref/AHK002').catch(() => {});
-    setToastMsg('âœ… Referral link copied!');
+    setToastMsg('✅ Referral link copied!');
     setTimeout(() => setToastMsg(''), 2500);
   };
 
   return (
     <div className="content">
-      {/* â”€â”€ WELCOME BANNER â”€â”€ */}
+      {/* ── WELCOME BANNER ── */}
       <motion.div
         className="user-welcome-banner"
         initial={{ opacity: 0, y: 20 }}
@@ -147,7 +173,7 @@ export default function UserDashboard() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2, duration: 0.5 }}
           >
-            Welcome back, Rahul! ðŸ‘‹
+            Welcome back, Rahul! 👋
           </motion.h2>
           <motion.p
             initial={{ opacity: 0 }}
@@ -169,7 +195,7 @@ export default function UserDashboard() {
         </div>
         <div className="user-welcome-stats">
           {[
-            { num: 'â‚¹18,420', lbl: 'Total Earned' },
+            { num: '₹18,420', lbl: 'Total Earned' },
             { num: '47', lbl: 'Team Members' },
             { num: 'Gold', lbl: 'My Rank' },
           ].map((stat, i) => (
@@ -187,20 +213,20 @@ export default function UserDashboard() {
         </div>
       </motion.div>
 
-      {/* â”€â”€ STAT CARDS â”€â”€ */}
+      {/* ── STAT CARDS ── */}
       <motion.div
         className="stats-row"
         variants={staggerContainer}
         initial="hidden"
         animate="visible"
       >
-        <AdminStatCard icon="fa-wallet" value={18420} prefix="â‚¹" label="Total Income" change="+â‚¹2,400 this week" trend="up" variant="blue" index={0} />
+        <AdminStatCard icon="fa-wallet" value={18420} prefix="₹" label="Total Income" change="+₹2,400 this week" trend="up" variant="blue" index={0} />
         <AdminStatCard icon="fa-users" value={47} label="Team Members" change="+3 this week" trend="up" variant="green" index={1} />
         <AdminStatCard icon="fa-star" value={2800} label="My BV Points" change="+450 this month" trend="up" variant="orange" index={2} />
-        <AdminStatCard icon="fa-arrow-down-to-line" value={6200} prefix="â‚¹" label="Withdrawable" change="Ready to withdraw" trend="up" variant="purple" index={3} />
+        <AdminStatCard icon="fa-arrow-down-to-line" value={6200} prefix="₹" label="Withdrawable" change="Ready to withdraw" trend="up" variant="purple" index={3} />
       </motion.div>
 
-      {/* â”€â”€ INCOME BREAKDOWN + QUICK ACTIONS â”€â”€ */}
+      {/* ── INCOME BREAKDOWN + QUICK ACTIONS ── */}
       <motion.div
         className="grid-3"
         variants={staggerContainer}
@@ -209,9 +235,35 @@ export default function UserDashboard() {
       >
         <motion.div variants={fadeUp} custom={0}>
           <AdminCard>
-            <div className="card-head">
+            <div className="card-head" style={{ position: 'relative' }}>
               <h3>Income Breakdown</h3>
-              <button className="btn-sm">This Month</button>
+              <button className="btn-sm flex items-center gap-1.5" onClick={() => setShowIncomeDropdown((v) => !v)}>
+                {incomePeriod} <i className="fa-solid fa-chevron-down" style={{ fontSize: '10px' }} />
+              </button>
+              <AnimatePresence>
+                {showIncomeDropdown && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute w-36 bg-white border border-gray-150 rounded-lg shadow-lg z-50 overflow-hidden py-1"
+                    style={{ top: '34px', right: 0 }}
+                  >
+                    {Object.keys(incomeBreakdownByPeriod).map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => {
+                          setIncomePeriod(p);
+                          setShowIncomeDropdown(false);
+                        }}
+                        className="w-full text-left px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 transition border-none bg-transparent cursor-pointer font-medium"
+                      >
+                        {p}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
             {incomeBreakdown.map((item, i) => (
               <motion.div
@@ -240,8 +292,8 @@ export default function UserDashboard() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.9 }}
             >
-              <span>Total This Month</span>
-              <span className="user-income-total-amount">â‚¹13,420</span>
+              <span>Total {incomePeriod}</span>
+              <span className="user-income-total-amount">{incomeTotalByPeriod[incomePeriod]}</span>
             </motion.div>
           </AdminCard>
         </motion.div>
@@ -321,7 +373,7 @@ export default function UserDashboard() {
         </motion.div>
       </motion.div>
 
-      {/* â”€â”€ NETWORK TREE + RECENT ORDERS â”€â”€ */}
+      {/* ── NETWORK TREE + RECENT ORDERS ── */}
       <motion.div
         className="grid-2"
         variants={staggerContainer}

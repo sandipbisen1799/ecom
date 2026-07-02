@@ -4,19 +4,29 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { franchiseMenu } from './menu';
 
-export default function FranchiseSidebar({ 
-  sidebarOpen, 
+export default function FranchiseSidebar({
+  sidebarOpen,
   toggleSidebar,
   collapsed,
-  onToggleCollapse
-}: { 
-  sidebarOpen: boolean, 
+  onToggleCollapse,
+  onOpenCommand,
+}: {
+  sidebarOpen: boolean,
   toggleSidebar: () => void,
   collapsed: boolean,
-  onToggleCollapse: () => void
+  onToggleCollapse: () => void,
+  onOpenCommand?: () => void,
 }) {
   const pathname = usePathname();
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 700);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Auto-open menus that contain the active path
   useEffect(() => {
@@ -40,7 +50,9 @@ export default function FranchiseSidebar({
 
   return (
     <>
-      <button className="mob-toggle" onClick={toggleSidebar}><i className="fa-solid fa-bars"></i></button>
+      {!sidebarOpen && (
+        <button className="mob-toggle" onClick={toggleSidebar}><i className="fa-solid fa-bars"></i></button>
+      )}
       <div className={`overlay-bg ${sidebarOpen ? 'show' : ''}`} onClick={toggleSidebar}></div>
 
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''} ${collapsed ? 'collapsed' : ''}`}>
@@ -54,13 +66,24 @@ export default function FranchiseSidebar({
           </div>
           <button
             className="sidebar-collapse-btn"
-            onClick={onToggleCollapse}
-            aria-label="Collapse sidebar"
+            onClick={isMobile ? toggleSidebar : onToggleCollapse}
+            aria-label={isMobile ? 'Close menu' : 'Collapse sidebar'}
             style={{ marginLeft: 'auto' }}
           >
-            <i className={`fa-solid ${collapsed ? 'fa-angles-right' : 'fa-angles-left'}`} />
+            <i className={`fa-solid ${isMobile ? 'fa-xmark' : collapsed ? 'fa-angles-right' : 'fa-angles-left'}`} />
           </button>
         </div>
+
+        <button
+          type="button"
+          className="sidebar-search"
+          onClick={onOpenCommand}
+          style={{ width: 'calc(100% - 28px)', border: '1px solid var(--sidebar-border)', cursor: 'pointer' }}
+        >
+          <i className="fa-solid fa-magnifying-glass" />
+          <span style={{ flex: 1, textAlign: 'left', color: 'var(--sidebar-muted)', fontSize: 12 }}>Search...</span>
+          <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--sidebar-muted)', background: '#fff', padding: '2px 6px', borderRadius: 5 }}>⌘K</span>
+        </button>
 
         <nav className="sidebar-nav">
           <div className="nav-section-label">Main Menu</div>
@@ -111,13 +134,13 @@ export default function FranchiseSidebar({
           <Link href="/login" className="nav-item"><div className="nav-icon-wrap"><i className="fa-solid fa-right-from-bracket"></i></div><span>Logout</span></Link>
         </nav>
 
-        <div className="sidebar-footer" style={{ borderTop: '1px solid rgba(255,255,255,.08)', padding: '16px', background: 'rgba(255,255,255,.02)' }}>
+        <div className="sidebar-footer" style={{ borderTop: '1px solid #E5E7EB', padding: '16px', background: '#F9FAFB' }}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-bold shadow-lg">
               AH
             </div>
             <div>
-              <h4 className="text-white text-sm font-bold m-0">AFI13880</h4>
+              <h4 className="text-gray-900 text-sm font-bold m-0">AFI13880</h4>
               <span className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Franchise</span>
             </div>
           </div>

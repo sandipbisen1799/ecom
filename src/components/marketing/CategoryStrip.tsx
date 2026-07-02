@@ -1,10 +1,12 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import { categories } from './data';
 import { fadeUp, staggerContainer } from '@/lib/motion';
 
 export default function CategoryStrip() {
+  const router = useRouter();
   return (
     <div className="relative z-20 bg-white dark:bg-slate-950 py-8 px-6 shadow-xl rounded-t-[2.5rem] -mt-8 max-w-6xl mx-auto border-x border-t border-slate-100 dark:border-slate-800">
       <motion.div
@@ -17,7 +19,9 @@ export default function CategoryStrip() {
         {categories.map((cat, i) => (
           <motion.button
             key={cat.label}
-            className="flex flex-col items-center gap-3 p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors group"
+            type="button"
+            onClick={() => router.push(`/user/shop?category=${encodeURIComponent(cat.label)}`)}
+            className="flex flex-col items-center gap-3 p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors group cursor-pointer"
             variants={fadeUp}
             custom={i}
             whileHover={{ y: -4, scale: 1.02 }}

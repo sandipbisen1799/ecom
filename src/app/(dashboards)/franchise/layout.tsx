@@ -4,6 +4,19 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import '../dashboards.css';
 import FranchiseSidebar from '@/components/franchise/FranchiseSidebar';
+import { franchiseMenu, type FranchiseMenuItem } from '@/components/franchise/menu';
+import CommandPalette, { type CommandPaletteItem } from '@/components/ui/CommandPalette';
+
+function flattenFranchiseMenu(items: FranchiseMenuItem[]): CommandPaletteItem[] {
+  const out: CommandPaletteItem[] = [];
+  items.forEach((item) => {
+    if (item.path) out.push({ label: item.title, href: item.path, icon: item.icon.replace('fa-solid ', '') });
+    item.submenu?.forEach((sub) => {
+      out.push({ label: sub.title, href: sub.path, icon: item.icon.replace('fa-solid ', ''), group: item.title });
+    });
+  });
+  return out;
+}
 
 export default function FranchiseLayout({
   children,
@@ -14,6 +27,18 @@ export default function FranchiseLayout({
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [commandOpen, setCommandOpen] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setCommandOpen(true);
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -42,11 +67,18 @@ export default function FranchiseLayout({
 
   return (
     <>
-      <FranchiseSidebar 
-        sidebarOpen={sidebarOpen} 
-        toggleSidebar={toggleSidebar} 
+      <FranchiseSidebar
+        sidebarOpen={sidebarOpen}
+        toggleSidebar={toggleSidebar}
         collapsed={sidebarCollapsed}
         onToggleCollapse={handleToggleCollapse}
+        onOpenCommand={() => setCommandOpen(true)}
+      />
+
+      <CommandPalette
+        open={commandOpen}
+        onClose={() => setCommandOpen(false)}
+        items={flattenFranchiseMenu(franchiseMenu)}
       />
 
       {/* MAIN CONTENT */}

@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,17 +11,22 @@ interface UserSidebarProps {
   onClose: () => void;
   collapsed: boolean;
   onToggleCollapse: () => void;
+  onOpenCommand?: () => void;
 }
 
-export default function UserSidebar({ open, onClose, collapsed, onToggleCollapse }: UserSidebarProps) {
+export default function UserSidebar({ open, onClose, collapsed, onToggleCollapse, onOpenCommand }: UserSidebarProps) {
   const pathname = usePathname();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 700);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   return (
-    <motion.aside
-      className={`sidebar user-sidebar ${open ? 'open' : ''} ${collapsed ? 'collapsed' : ''}`}
-      initial={false}
-      animate={{ x: 0 }}
-    >
+    <aside className={`sidebar user-sidebar ${open ? 'open' : ''} ${collapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-glow user-sidebar-glow" />
 
       <div className="sidebar-logo">
@@ -43,12 +49,23 @@ export default function UserSidebar({ open, onClose, collapsed, onToggleCollapse
           className="sidebar-collapse-btn"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          aria-label="Collapse sidebar"
-          onClick={onToggleCollapse}
+          aria-label={isMobile ? 'Close menu' : 'Collapse sidebar'}
+          onClick={isMobile ? onClose : onToggleCollapse}
         >
-          <i className={`fa-solid ${collapsed ? 'fa-angles-right' : 'fa-angles-left'}`} />
+          <i className={`fa-solid ${isMobile ? 'fa-xmark' : collapsed ? 'fa-angles-right' : 'fa-angles-left'}`} />
         </motion.button>
       </div>
+
+      <button
+        type="button"
+        className="sidebar-search"
+        onClick={onOpenCommand}
+        style={{ width: 'calc(100% - 28px)', border: '1px solid var(--sidebar-border)', cursor: 'pointer' }}
+      >
+        <i className="fa-solid fa-magnifying-glass" />
+        <span style={{ flex: 1, textAlign: 'left', color: 'var(--sidebar-muted)', fontSize: 12 }}>Search...</span>
+        <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--sidebar-muted)', background: '#fff', padding: '2px 6px', borderRadius: 5 }}>⌘K</span>
+      </button>
 
       <nav className="sidebar-nav">
         {userMenuSections.map((section) => (
@@ -96,7 +113,7 @@ export default function UserSidebar({ open, onClose, collapsed, onToggleCollapse
           <span className="online-dot" title="Online" />
         </div>
       </div>
-    </motion.aside>
+    </aside>
   );
 }
 
