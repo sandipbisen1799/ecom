@@ -1,6 +1,8 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 import AdminStatCard from '@/components/admin/AdminStatCard';
 import AdminCard from '@/components/admin/AdminCard';
 import AdminButton from '@/components/admin/AdminButton';
@@ -50,6 +52,64 @@ const orders = [
 ];
 
 export default function AdminDashboard() {
+  const [distributorPeriod, setDistributorPeriod] = useState('This Month');
+  const [distributorList, setDistributorList] = useState(distributors);
+  const [showPeriodDropdown, setShowPeriodDropdown] = useState(false);
+
+  const [orderStatusFilter, setOrderStatusFilter] = useState('All');
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+
+  const [reportGenerating, setReportGenerating] = useState(false);
+  const [toastMsg, setToastMsg] = useState('');
+
+  const showToast = (msg: string) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(''), 3000);
+  };
+
+  const handlePeriodChange = (period: string) => {
+    setDistributorPeriod(period);
+    setShowPeriodDropdown(false);
+
+    if (period === 'Last Quarter') {
+      setDistributorList([
+        { rank: '🥇', letter: 'R', name: 'Raj Thakur', id: 'AHK0034 – Mumbai', width: '100%', amount: '₹245K', gradient: 'linear-gradient(135deg,#6b7280,#9ca3af)' },
+        { rank: '🥈', letter: 'P', name: 'Priya Sharma', id: 'AHK0021 – Delhi', width: '85%', amount: '₹210K', gradient: 'linear-gradient(135deg,#f59e0b,#fbbf24)' },
+        { rank: '🥉', letter: 'S', name: 'Suresh Kumar', id: 'AHK0072 – Jaipur', width: '70%', amount: '₹180K', gradient: 'linear-gradient(135deg,#1D6435,#81CE29)' },
+        { rank: '4', letter: 'A', name: 'Anita Verma', id: 'AHK0058 – Pune', width: '55%', amount: '₹140K', gradient: 'linear-gradient(135deg,#92400e,#b45309)' },
+        { rank: '5', letter: 'N', name: 'Nisha Pandey', id: 'AHK0091 – Lucknow', width: '40%', amount: '₹102K', gradient: 'linear-gradient(135deg,#3b82f6,#60a5fa)' },
+      ]);
+      showToast('📊 Top list updated for Last Quarter');
+    } else if (period === 'All Time') {
+      setDistributorList([
+        { rank: '🥇', letter: 'A', name: 'Anita Verma', id: 'AHK0058 – Pune', width: '100%', amount: '₹840K', gradient: 'linear-gradient(135deg,#92400e,#b45309)' },
+        { rank: '🥈', letter: 'P', name: 'Priya Sharma', id: 'AHK0021 – Delhi', width: '90%', amount: '₹760K', gradient: 'linear-gradient(135deg,#f59e0b,#fbbf24)' },
+        { rank: '🥉', letter: 'R', name: 'Raj Thakur', id: 'AHK0034 – Mumbai', width: '78%', amount: '₹680K', gradient: 'linear-gradient(135deg,#6b7280,#9ca3af)' },
+        { rank: '4', letter: 'S', name: 'Suresh Kumar', id: 'AHK0072 – Jaipur', width: '62%', amount: '₹520K', gradient: 'linear-gradient(135deg,#1D6435,#81CE29)' },
+        { rank: '5', letter: 'N', name: 'Nisha Pandey', id: 'AHK0091 – Lucknow', width: '50%', amount: '₹410K', gradient: 'linear-gradient(135deg,#3b82f6,#60a5fa)' },
+      ]);
+      showToast('📊 Top list updated for All Time');
+    } else {
+      setDistributorList(distributors);
+      showToast('📊 Top list updated for This Month');
+    }
+  };
+
+  const handleGenerateReport = () => {
+    if (reportGenerating) return;
+    setReportGenerating(true);
+    showToast('⚙️ Generating revenue report...');
+    setTimeout(() => {
+      setReportGenerating(false);
+      showToast('✅ Report AHK-Revenue-2026.pdf downloaded!');
+    }, 2000);
+  };
+
+  const filteredOrders = orders.filter(o => {
+    if (orderStatusFilter === 'All') return true;
+    return o.status.toLowerCase() === orderStatusFilter.toLowerCase();
+  });
+
   return (
     <div className="content">
       <motion.div
@@ -74,7 +134,14 @@ export default function AdminDashboard() {
           <AdminCard>
             <div className="card-head">
               <h3>Monthly Revenue</h3>
-              <AdminButton variant="sm">View Report</AdminButton>
+              <button 
+                onClick={handleGenerateReport} 
+                className="btn-sm" 
+                style={{ border: '1px solid var(--border)', background: '#fff', padding: '6px 14px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontFamily: 'Poppins, sans-serif', color: 'var(--muted)', fontWeight: 600 }} 
+                disabled={reportGenerating}
+              >
+                {reportGenerating ? 'Generating...' : 'View Report'}
+              </button>
             </div>
             <div className="chart-bars">
               {chartData.map((bar, i) => (
@@ -163,9 +230,40 @@ export default function AdminDashboard() {
 
         <motion.div variants={fadeUp} custom={1}>
           <AdminCard>
-            <div className="card-head"><h3>Top Distributors</h3><AdminButton variant="sm">This Month</AdminButton></div>
+            <div className="card-head" style={{ position: 'relative' }}>
+              <h3>Top Distributors</h3>
+              <button 
+                onClick={() => setShowPeriodDropdown(!showPeriodDropdown)}
+                className="btn-sm flex items-center gap-1.5"
+                style={{ border: '1px solid var(--border)', background: '#fff', padding: '6px 14px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontFamily: 'Poppins, sans-serif', color: 'var(--muted)', fontWeight: 600 }}
+              >
+                {distributorPeriod} <i className="fa-solid fa-chevron-down" style={{ fontSize: '10px' }}></i>
+              </button>
+
+              <AnimatePresence>
+                {showPeriodDropdown && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute w-36 bg-white border border-gray-150 rounded-lg shadow-lg z-50 overflow-hidden py-1"
+                    style={{ top: '34px', right: 0 }}
+                  >
+                    {['This Month', 'Last Quarter', 'All Time'].map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => handlePeriodChange(p)}
+                        className="w-full text-left px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 transition border-none bg-transparent cursor-pointer font-medium"
+                      >
+                        {p}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
             <ul className="dist-list">
-              {distributors.map((d, i) => (
+              {distributorList.map((d, i) => (
                 <motion.li
                   key={d.name}
                   className="dist-item"
@@ -204,11 +302,52 @@ export default function AdminDashboard() {
         transition={{ duration: 0.5 }}
       >
         <AdminCard>
-          <div className="card-head">
+          <div className="card-head" style={{ position: 'relative' }}>
             <h3>Recent Orders</h3>
             <div style={{ display: 'flex', gap: '8px' }}>
-              <AdminButton variant="sm">Filter</AdminButton>
-              <AdminButton variant="sm-fill">View All Orders</AdminButton>
+              <div style={{ position: 'relative' }}>
+                <button 
+                  onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                  className="btn-sm flex items-center gap-1.5"
+                  style={{ border: '1px solid var(--border)', background: '#fff', padding: '6px 14px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontFamily: 'Poppins, sans-serif', color: 'var(--muted)', fontWeight: 600 }}
+                >
+                  Status: {orderStatusFilter} <i className="fa-solid fa-chevron-down" style={{ fontSize: '10px' }}></i>
+                </button>
+
+                <AnimatePresence>
+                  {showFilterDropdown && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute right-0 w-36 bg-white border border-gray-150 rounded-lg shadow-lg z-50 overflow-hidden py-1"
+                      style={{ top: '34px', right: 0 }}
+                    >
+                      {['All', 'Paid', 'Delivered', 'Processing', 'Cancelled'].map((status) => (
+                        <button
+                          key={status}
+                          onClick={() => {
+                            setOrderStatusFilter(status);
+                            setShowFilterDropdown(false);
+                            showToast(`🔍 Filtered: ${status}`);
+                          }}
+                          className="w-full text-left px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 transition border-none bg-transparent cursor-pointer font-medium"
+                        >
+                          {status}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              <Link 
+                href="/admin/orders" 
+                className="btn-sm fill" 
+                style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', fontSize: '12px', fontFamily: 'Poppins, sans-serif', border: 'none' }}
+              >
+                View All Orders
+              </Link>
             </div>
           </div>
           <table className="data-table">
@@ -216,7 +355,7 @@ export default function AdminDashboard() {
               <tr><th>Order ID</th><th>Member</th><th>Product</th><th>Amount</th><th>Date</th><th>Status</th></tr>
             </thead>
             <tbody>
-              {orders.map((o, i) => (
+              {filteredOrders.map((o, i) => (
                 <motion.tr
                   key={o.id}
                   initial={{ opacity: 0 }}
@@ -237,6 +376,20 @@ export default function AdminDashboard() {
           </table>
         </AdminCard>
       </motion.div>
+
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {toastMsg && (
+          <motion.div
+            className="fixed bottom-6 right-6 bg-slate-900 text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-2xl z-[9999] flex items-center gap-2 border border-white/10"
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+          >
+            {toastMsg}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -165,8 +165,10 @@
 
 @media (max-width: 700px) {
   .login-card { flex-direction: column; }
+  .left-panel { padding: 24px 16px; }
   .right-panel { padding: 30px 20px; }
   .right-illustration { width: 100px; height: 100px; }
   .right-illustration i { font-size: 48px; }
   .right-title { font-size: 20px; }
+  .creds-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 }

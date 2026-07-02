@@ -8,14 +8,16 @@ import { userMenuSections } from './menu';
 interface UserSidebarProps {
   open: boolean;
   onClose: () => void;
+  collapsed: boolean;
+  onToggleCollapse: () => void;
 }
 
-export default function UserSidebar({ open, onClose }: UserSidebarProps) {
+export default function UserSidebar({ open, onClose, collapsed, onToggleCollapse }: UserSidebarProps) {
   const pathname = usePathname();
 
   return (
     <motion.aside
-      className={`sidebar user-sidebar ${open ? 'open' : ''}`}
+      className={`sidebar user-sidebar ${open ? 'open' : ''} ${collapsed ? 'collapsed' : ''}`}
       initial={false}
       animate={{ x: 0 }}
     >
@@ -42,8 +44,9 @@ export default function UserSidebar({ open, onClose }: UserSidebarProps) {
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           aria-label="Collapse sidebar"
+          onClick={onToggleCollapse}
         >
-          <i className="fa-solid fa-angles-left" />
+          <i className={`fa-solid ${collapsed ? 'fa-angles-right' : 'fa-angles-left'}`} />
         </motion.button>
       </div>
 

@@ -55,6 +55,65 @@ const withdrawalHistory = [
 
 export default function UserDashboard() {
   const [toastMsg, setToastMsg] = useState('');
+  const [addMemberOpen, setAddMemberOpen] = useState(false);
+  const [newMemberName, setNewMemberName] = useState('');
+  const [newMemberEmail, setNewMemberEmail] = useState('');
+  const [newMemberMobile, setNewMemberMobile] = useState('');
+  
+  const [treeData, setTreeData] = useState(networkTree);
+  
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState<any[]>([
+    { id: 1, text: 'Hello! I am your AHK support assistant. How can I help you today?', sender: 'bot' }
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+
+  const handleAddMember = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMemberName) return;
+    
+    setToastMsg(`✅ Member ${newMemberName} registered successfully!`);
+    setAddMemberOpen(false);
+    
+    const updatedLevel2 = [...treeData.level2, {
+      name: newMemberName,
+      id: `AHK0${Math.floor(950 + Math.random() * 50)}`,
+      letter: newMemberName.charAt(0).toUpperCase(),
+      gradient: 'linear-gradient(135deg,#14b8a6,#0d9488)'
+    }];
+    setTreeData({ ...treeData, level2: updatedLevel2 });
+    
+    setNewMemberName('');
+    setNewMemberEmail('');
+    setNewMemberMobile('');
+    setTimeout(() => setToastMsg(''), 3000);
+  };
+
+  const handleSendChat = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!chatInput.trim()) return;
+
+    const userMsg = { id: Date.now(), text: chatInput, sender: 'user' };
+    setChatMessages(prev => [...prev, userMsg]);
+    const currentInput = chatInput;
+    setChatInput('');
+    setIsTyping(true);
+
+    setTimeout(() => {
+      setIsTyping(false);
+      let replyText = 'Thanks for your query! A support representative will get back to you shortly.';
+      const msg = currentInput.toLowerCase();
+      if (msg.includes('withdraw') || msg.includes('money') || msg.includes('payout')) {
+        replyText = 'Payouts are processed every Monday. You can submit withdrawal requests via the "Withdraw" section if your balance is above ₹500.';
+      } else if (msg.includes('product') || msg.includes('shop') || msg.includes('order')) {
+        replyText = 'You can shop for wellness items under the "Shop Products" menu. Active orders are shipped via DHL/FedEx within 48 hours.';
+      } else if (msg.includes('member') || msg.includes('add') || msg.includes('network')) {
+        replyText = 'To expand your network, use the "Invite Members" button to add downline partners. Your BV points will increase automatically!';
+      }
+      setChatMessages(prev => [...prev, { id: Date.now(), text: replyText, sender: 'bot' }]);
+    }, 1200);
+  };
 
   useEffect(() => {
     document.querySelectorAll('.user-progress-fill').forEach((el) => {
@@ -102,10 +161,10 @@ export default function UserDashboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
           >
-            <Link href="#" className="user-btn-invite">
+            <button onClick={() => setAddMemberOpen(true)} className="user-btn-invite" style={{ border: 'none', cursor: 'pointer' }}>
               <i className="fa-solid fa-user-plus" style={{ marginRight: 6 }} />
               Invite Members
-            </Link>
+            </button>
           </motion.div>
         </div>
         <div className="user-welcome-stats">
@@ -191,19 +250,54 @@ export default function UserDashboard() {
           <AdminCard>
             <div className="card-head"><h3>Quick Actions</h3></div>
             <div className="user-quick-grid">
-              {quickActions.map((action, i) => (
-                <motion.div
-                  key={action.label}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.3 + i * 0.06 }}
-                >
-                  <Link href={action.href} className="user-quick-btn">
-                    <i className={`fa-solid ${action.icon}`} />
-                    <span>{action.label}</span>
-                  </Link>
-                </motion.div>
-              ))}
+              {quickActions.map((action, i) => {
+                const isAddMember = action.label === 'Add Member';
+                const isShareLink = action.label === 'Share Link';
+                const isGetHelp = action.label === 'Get Help';
+
+                const handleClick = (e: React.MouseEvent) => {
+                  if (isAddMember) {
+                    e.preventDefault();
+                    setAddMemberOpen(true);
+                  } else if (isShareLink) {
+                    e.preventDefault();
+                    copyRef();
+                  } else if (isGetHelp) {
+                    e.preventDefault();
+                    setChatOpen(true);
+                  }
+                };
+
+                if (isAddMember || isShareLink || isGetHelp) {
+                  return (
+                    <motion.div
+                      key={action.label}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.3 + i * 0.06 }}
+                    >
+                      <button onClick={handleClick} className="user-quick-btn w-full border-none text-left" style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                        <i className={`fa-solid ${action.icon}`} />
+                        <span>{action.label}</span>
+                      </button>
+                    </motion.div>
+                  );
+                }
+
+                return (
+                  <motion.div
+                    key={action.label}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.3 + i * 0.06 }}
+                  >
+                    <Link href={action.href} className="user-quick-btn">
+                      <i className={`fa-solid ${action.icon}`} />
+                      <span>{action.label}</span>
+                    </Link>
+                  </motion.div>
+                );
+              })}
             </div>
 
             <motion.div
@@ -237,29 +331,25 @@ export default function UserDashboard() {
       >
         <motion.div variants={fadeUp} custom={0}>
           <AdminCard>
-            <div className="card-head">
-              <h3>My Network Tree</h3>
-              <button className="btn-sm fill">Full View</button>
-            </div>
-            <div className="user-tree-wrap">
-              {/* Level 0 â€” Me */}
+             <div className="user-tree-wrap">
+              {/* Level 0 — Me */}
               <div className="user-tree-level">
                 <motion.div
                   className="user-tree-node"
                   whileHover={{ scale: 1.06 }}
                 >
-                  <div className="user-tree-avatar" style={{ background: networkTree.root.gradient, color: '#fff' }}>
-                    {networkTree.root.letter}
+                  <div className="user-tree-avatar" style={{ background: treeData.root.gradient, color: '#fff' }}>
+                    {treeData.root.letter}
                   </div>
-                  <div className="user-tree-name">{networkTree.root.name}</div>
-                  <div className="user-tree-id">{networkTree.root.id}</div>
+                  <div className="user-tree-name">{treeData.root.name}</div>
+                  <div className="user-tree-id">{treeData.root.id}</div>
                 </motion.div>
               </div>
               <div className="user-tree-connector" />
 
               {/* Level 1 */}
               <div className="user-tree-level">
-                {networkTree.level1.map((member, i) => (
+                {treeData.level1.map((member, i) => (
                   <motion.div
                     key={member.id}
                     className="user-tree-node"
@@ -281,7 +371,7 @@ export default function UserDashboard() {
 
               {/* Level 2 */}
               <div className="user-tree-level">
-                {networkTree.level2.map((member, i) => (
+                {treeData.level2.map((member, i) => (
                   <motion.div
                     key={member.id}
                     className="user-tree-node"
@@ -308,7 +398,7 @@ export default function UserDashboard() {
                 transition={{ delay: 0.7 }}
               >
                 <i className="fa-solid fa-users" style={{ marginRight: 5 }} />
-                47 total members in your network
+                {47 + (treeData.level2.length - networkTree.level2.length)} total members in your network
               </motion.div>
             </div>
           </AdminCard>
@@ -372,7 +462,7 @@ export default function UserDashboard() {
         </motion.div>
       </motion.div>
 
-      {/* â”€â”€ TOAST NOTIFICATION â”€â”€ */}
+      {/* ── TOAST NOTIFICATION ── */}
       {toastMsg && (
         <motion.div
           className="user-toast"

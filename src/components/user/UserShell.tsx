@@ -14,11 +14,27 @@ interface UserShellProps {
 
 export default function UserShell({ children }: UserShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const pathname = usePathname();
   const pageInfo = userPageTitles[pathname] || { title: 'Dashboard', sub: 'Overview' };
 
+  // Load from localStorage on mount
+  require('react').useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setSidebarCollapsed(localStorage.getItem('ahk_user_sidebar_collapsed') === 'true');
+    }
+  }, []);
+
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
   const closeSidebar = () => setSidebarOpen(false);
+
+  const handleToggleCollapse = () => {
+    setSidebarCollapsed((prev) => {
+      const newVal = !prev;
+      localStorage.setItem('ahk_user_sidebar_collapsed', String(newVal));
+      return newVal;
+    });
+  };
 
   return (
     <>
@@ -44,9 +60,14 @@ export default function UserShell({ children }: UserShellProps) {
         )}
       </AnimatePresence>
 
-      <UserSidebar open={sidebarOpen} onClose={closeSidebar} />
+      <UserSidebar 
+        open={sidebarOpen} 
+        onClose={closeSidebar} 
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={handleToggleCollapse}
+      />
 
-      <div className="main user-main">
+      <div className={`main user-main ${sidebarCollapsed ? 'collapsed' : ''}`}>
         <UserTopbar pageSub={pageInfo.sub} onMenuToggle={toggleSidebar} />
 
         <div className="admin-content-wrap">

@@ -9,6 +9,8 @@ import { adminMenuItems, type MainMenuItem } from './menu';
 interface AdminSidebarProps {
   open: boolean;
   onClose: () => void;
+  collapsed: boolean;
+  onToggleCollapse: () => void;
 }
 
 function isItemActive(item: MainMenuItem, pathname: string): boolean {
@@ -22,7 +24,7 @@ function isItemActive(item: MainMenuItem, pathname: string): boolean {
   });
 }
 
-export default function AdminSidebar({ open, onClose }: AdminSidebarProps) {
+export default function AdminSidebar({ open, onClose, collapsed, onToggleCollapse }: AdminSidebarProps) {
   const pathname = usePathname();
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
   const [expandedSubMenus, setExpandedSubMenus] = useState<Record<string, boolean>>({});
@@ -64,7 +66,7 @@ export default function AdminSidebar({ open, onClose }: AdminSidebarProps) {
 
   return (
     <motion.aside
-      className={`sidebar ${open ? 'open' : ''}`}
+      className={`sidebar ${open ? 'open' : ''} ${collapsed ? 'collapsed' : ''}`}
       initial={false}
       animate={{ x: 0 }}
     >
@@ -91,8 +93,9 @@ export default function AdminSidebar({ open, onClose }: AdminSidebarProps) {
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           aria-label="Collapse sidebar"
+          onClick={onToggleCollapse}
         >
-          <i className="fa-solid fa-angles-left" />
+          <i className={`fa-solid ${collapsed ? 'fa-angles-right' : 'fa-angles-left'}`} />
         </motion.button>
       </div>
 

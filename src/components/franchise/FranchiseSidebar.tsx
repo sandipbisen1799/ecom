@@ -4,7 +4,17 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { franchiseMenu } from './menu';
 
-export default function FranchiseSidebar({ sidebarOpen, toggleSidebar }: { sidebarOpen: boolean, toggleSidebar: () => void }) {
+export default function FranchiseSidebar({ 
+  sidebarOpen, 
+  toggleSidebar,
+  collapsed,
+  onToggleCollapse
+}: { 
+  sidebarOpen: boolean, 
+  toggleSidebar: () => void,
+  collapsed: boolean,
+  onToggleCollapse: () => void
+}) {
   const pathname = usePathname();
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
 
@@ -33,7 +43,7 @@ export default function FranchiseSidebar({ sidebarOpen, toggleSidebar }: { sideb
       <button className="mob-toggle" onClick={toggleSidebar}><i className="fa-solid fa-bars"></i></button>
       <div className={`overlay-bg ${sidebarOpen ? 'show' : ''}`} onClick={toggleSidebar}></div>
 
-      <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
+      <aside className={`sidebar ${sidebarOpen ? 'open' : ''} ${collapsed ? 'collapsed' : ''}`}>
         <div className="sidebar-logo">
           <div className="sidebar-brand">
             <div className="sidebar-brand-icon"><i className="fa-solid fa-store"></i></div>
@@ -42,6 +52,14 @@ export default function FranchiseSidebar({ sidebarOpen, toggleSidebar }: { sideb
               <span className="brand-sub">Franchise Panel</span>
             </div>
           </div>
+          <button
+            className="sidebar-collapse-btn"
+            onClick={onToggleCollapse}
+            aria-label="Collapse sidebar"
+            style={{ marginLeft: 'auto' }}
+          >
+            <i className={`fa-solid ${collapsed ? 'fa-angles-right' : 'fa-angles-left'}`} />
+          </button>
         </div>
 
         <nav className="sidebar-nav">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Card from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -35,9 +35,47 @@ export default function ProductCard({ product, index }: ProductCardProps) {
   const [wishlisted, setWishlisted] = useState(false);
   const [inCart, setInCart] = useState(false);
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const wishlist = JSON.parse(localStorage.getItem('ahk_wishlist') || '[]');
+      setWishlisted(wishlist.some((item: any) => item.id === product.id));
+    }
+  }, [product.id]);
+
   const handleAddToCart = () => {
     setInCart(true);
     setTimeout(() => setInCart(false), 2000);
+    
+    if (typeof window !== 'undefined') {
+      const cart = JSON.parse(localStorage.getItem('ahk_cart') || '[]');
+      const existing = cart.find((item: any) => item.id === product.id);
+      if (existing) {
+        existing.quantity = (existing.quantity || 1) + 1;
+      } else {
+        cart.push({ ...product, quantity: 1 });
+      }
+      localStorage.setItem('ahk_cart', JSON.stringify(cart));
+      window.dispatchEvent(new Event('ahk_cart_updated'));
+    }
+  };
+
+  const toggleWishlist = () => {
+    const nextVal = !wishlisted;
+    setWishlisted(nextVal);
+    
+    if (typeof window !== 'undefined') {
+      const wishlist = JSON.parse(localStorage.getItem('ahk_wishlist') || '[]');
+      if (nextVal) {
+        if (!wishlist.some((item: any) => item.id === product.id)) {
+          wishlist.push(product);
+        }
+      } else {
+        const idx = wishlist.findIndex((item: any) => item.id === product.id);
+        if (idx > -1) wishlist.splice(idx, 1);
+      }
+      localStorage.setItem('ahk_wishlist', JSON.stringify(wishlist));
+      window.dispatchEvent(new Event('ahk_wishlist_updated'));
+    }
   };
 
   return (
@@ -70,7 +108,7 @@ export default function ProductCard({ product, index }: ProductCardProps) {
         
         <motion.button
           className={`absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm border-none cursor-pointer flex items-center justify-center text-[15px] shadow-sm transition-colors z-10 ${wishlisted ? 'text-red-500' : 'text-slate-400 hover:text-red-400'}`}
-          onClick={() => setWishlisted(!wishlisted)}
+          onClick={toggleWishlist}
           whileHover={{ scale: 1.15 }}
           whileTap={buttonTap}
           aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}

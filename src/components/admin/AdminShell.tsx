@@ -14,11 +14,27 @@ interface AdminShellProps {
 
 export default function AdminShell({ children }: AdminShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const pathname = usePathname();
   const pageInfo = adminPageTitles[pathname] || { title: 'Dashboard', sub: 'Details' };
 
+  // Load from localStorage on mount
+  require('react').useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setSidebarCollapsed(localStorage.getItem('ahk_admin_sidebar_collapsed') === 'true');
+    }
+  }, []);
+
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
   const closeSidebar = () => setSidebarOpen(false);
+  
+  const handleToggleCollapse = () => {
+    setSidebarCollapsed((prev) => {
+      const newVal = !prev;
+      localStorage.setItem('ahk_admin_sidebar_collapsed', String(newVal));
+      return newVal;
+    });
+  };
 
   return (
     <>
@@ -44,9 +60,14 @@ export default function AdminShell({ children }: AdminShellProps) {
         )}
       </AnimatePresence>
 
-      <AdminSidebar open={sidebarOpen} onClose={closeSidebar} />
+      <AdminSidebar 
+        open={sidebarOpen} 
+        onClose={closeSidebar} 
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={handleToggleCollapse}
+      />
 
-      <div className="main admin-main">
+      <div className={`main admin-main ${sidebarCollapsed ? 'collapsed' : ''}`}>
         <AdminTopbar pageSub={pageInfo.sub} onMenuToggle={toggleSidebar} />
 
         <div className="admin-content-wrap">
